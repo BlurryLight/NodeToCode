@@ -84,6 +84,7 @@ private:
 	FReply OnOpenWindowClicked();
 	FReply OnCopyJsonClicked();
 	FReply OnTranslateClicked();
+	FReply OnTranslateEntireBlueprintClicked();
 	FReply OnTagButtonClicked();
 
 	// Tag popover content
@@ -101,6 +102,7 @@ private:
 	FText GetTagCountText() const;
 	FText GetCopyJsonTooltip() const;
 	FText GetTranslateTooltip() const;
+	FText GetTranslateEntireTooltip() const;
 	FText GetTagButtonTooltip() const;
 	FSlateColor GetTagButtonColor() const;
 

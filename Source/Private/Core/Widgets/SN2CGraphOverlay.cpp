@@ -214,6 +214,45 @@ void SN2CGraphOverlay::Construct(const FArguments& InArgs)
 				]
 			]
 
+			// Translate Entire Blueprint button
+			+ SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			.Padding(FN2CSpacing::XS, 0.0f, 0.0f, 0.0f)
+			[
+				SNew(SButton)
+				.ButtonStyle(&N2CStyle::GetSimpleButtonStyle())
+				.ToolTipText(this, &SN2CGraphOverlay::GetTranslateEntireTooltip)
+				.OnClicked(this, &SN2CGraphOverlay::OnTranslateEntireBlueprintClicked)
+				.IsEnabled_Lambda([this]() { return !bIsTranslating; })
+				.ContentPadding(FMargin(FN2CSpacing::XS, FN2CSpacing::XXS))
+				[
+					SNew(SHorizontalBox)
+					+ SHorizontalBox::Slot()
+					.AutoWidth()
+					.VAlign(VAlign_Center)
+					[
+						SNew(SBox)
+						.WidthOverride(FN2CSizing::IconMD)
+						.HeightOverride(FN2CSizing::IconMD)
+						[
+							SNew(SImage)
+							.Image(FAppStyle::GetBrush("Icons.Convert"))
+						]
+					]
+					+ SHorizontalBox::Slot()
+					.AutoWidth()
+					.VAlign(VAlign_Center)
+					.Padding(FN2CSpacing::XS, 0.0f, 0.0f, 0.0f)
+					[
+						SNew(STextBlock)
+						.Text(LOCTEXT("TranslateEntireButton", "BP"))
+						.Font(FN2CFonts::Small())
+						.ColorAndOpacity(UIBind(&FN2CUIColors::TextPrimary))
+					]
+				]
+			]
+
 			// Separator before context usage
 			+ SHorizontalBox::Slot()
 			.AutoWidth()
@@ -413,6 +452,32 @@ FReply SN2CGraphOverlay::OnTranslateClicked()
 	// Request translation through the central system
 	// This broadcasts to the main window which will show the progress modal
 	FN2CEditorIntegration::Get().RequestOverlayTranslation(GraphGuid, GraphName, BlueprintPath);
+
+	return FReply::Handled();
+}
+
+FReply SN2CGraphOverlay::OnTranslateEntireBlueprintClicked()
+{
+	// Check global translation state
+	if (FN2CEditorIntegration::Get().IsAnyTranslationInProgress())
+	{
+		FN2CLogger::Get().Log(TEXT("Translation already in progress globally"),
+			EN2CLogSeverity::Warning, TEXT("SN2CGraphOverlay"));
+		return FReply::Handled();
+	}
+
+	if (!BlueprintEditor.IsValid())
+	{
+		FN2CLogger::Get().Log(TEXT("Blueprint editor reference is invalid"),
+			EN2CLogSeverity::Warning, TEXT("SN2CGraphOverlay"));
+		return FReply::Handled();
+	}
+
+	// Ensure the editor integration has the correct active editor
+	FN2CEditorIntegration::Get().StoreActiveBlueprintEditor(BlueprintEditor);
+
+	// Translate the entire Blueprint (all graphs + variables + components)
+	FN2CEditorIntegration::Get().ExecuteTranslateEntireBlueprintForEditor(BlueprintEditor);
 
 	return FReply::Handled();
 }
@@ -859,6 +924,11 @@ FText SN2CGraphOverlay::GetTranslateTooltip() const
 		return LOCTEXT("TranslatingTooltip", "Translation in progress...");
 	}
 	return LOCTEXT("TranslateTooltip", "Translate this graph using the configured LLM");
+}
+
+FText SN2CGraphOverlay::GetTranslateEntireTooltip() const
+{
+	return LOCTEXT("TranslateEntireTooltip", "Translate the entire Blueprint (all graphs, variables and components) using the configured LLM");
 }
 
 FText SN2CGraphOverlay::GetTagButtonTooltip() const
