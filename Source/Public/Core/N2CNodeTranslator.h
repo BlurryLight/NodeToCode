@@ -85,6 +85,10 @@ private:
     /** Maps pin GUIDs to simplified IDs */
     TMap<FGuid, FString> PinIDMap;
 
+    /** Monotonic counters for ID generation (robust against re-processed nodes and duplicate pin GUIDs) */
+    int32 NextNodeID = 0;
+    int32 NextPinID = 0;
+
     /** Tracking sets to prevent duplicate processing */
     TSet<FString> ProcessedStructPaths;
     TSet<FString> ProcessedEnumPaths;

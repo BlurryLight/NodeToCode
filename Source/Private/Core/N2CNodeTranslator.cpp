@@ -41,6 +41,8 @@ bool FN2CNodeTranslator::GenerateN2CStruct(const TArray<UK2Node*>& CollectedNode
     N2CBlueprint = FN2CBlueprint();
     NodeIDMap.Empty();
     PinIDMap.Empty();
+    NextNodeID = 0;
+    NextPinID = 0;
     ProcessedStructPaths.Empty();  // Clear processed structs set
     ProcessedEnumPaths.Empty();    // Clear processed enums set
 
@@ -159,13 +161,14 @@ bool FN2CNodeTranslator::GenerateN2CStruct(const TArray<UK2Node*>& CollectedNode
 
 FString FN2CNodeTranslator::GenerateNodeID()
 {
-    return FString::Printf(TEXT("N%d"), NodeIDMap.Num() + 1);
+    return FString::Printf(TEXT("N%d"), ++NextNodeID);
 }
 
 FString FN2CNodeTranslator::GeneratePinID(int32 PinCount)
 {
-    // Use the total number of pins in the map to ensure global uniqueness
-    return FString::Printf(TEXT("P%d"), PinIDMap.Num() + 1);
+    // Use a monotonic counter instead of the map size so IDs stay unique even when
+    // a node is re-processed or the blueprint contains duplicate pin GUIDs.
+    return FString::Printf(TEXT("P%d"), ++NextPinID);
 }
 
 bool FN2CNodeTranslator::InitializeNodeProcessing(UK2Node* Node, FN2CNodeDefinition& OutNodeDef)
