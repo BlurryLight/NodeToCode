@@ -56,7 +56,8 @@ FString UN2CDeepSeekService::FormatRequestPayload(const FString& UserMessage, co
     PayloadBuilder->AddUserMessage(FinalUserMessage);
     
     // Add JSON schema for response format if model supports it
-    if (Settings && FN2CLLMModelUtils::GetDeepSeekModelValue(Settings->DeepSeekModel) == TEXT("deepseek-chat"))
+    const FString ModelValue = Settings ? FN2CLLMModelUtils::GetDeepSeekModelValue(Settings->DeepSeekModel) : TEXT("");
+    if (ModelValue != TEXT("deepseek-reasoner"))
     {
         PayloadBuilder->SetJsonResponseFormat(UN2CLLMPayloadBuilder::GetN2CResponseSchema());
     }

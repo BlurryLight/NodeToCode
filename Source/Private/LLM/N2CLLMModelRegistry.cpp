@@ -546,6 +546,21 @@ void FN2CLLMModelRegistry::InitializeRegistry()
 		8192
 	));
 
+	// DeepSeek V4 Flash
+	DeepSeekModels.Add(EN2CDeepSeekModel::DeepSeek_V4_Flash, FN2CModelMetadata(
+		TEXT("deepseek-v4-flash"),
+		TEXT("DeepSeek V4 Flash"),
+		EN2CLLMProvider::DeepSeek,
+		0.27f, 1.1f,          // Cache miss pricing
+		131072,
+		16384,
+		true,
+		true,
+		false,
+		0.0f,
+		16384
+	));
+
 	// ========================================================================
 	// Build Model ID Index for fast lookup
 	// ========================================================================

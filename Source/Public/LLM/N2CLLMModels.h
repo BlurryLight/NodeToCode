@@ -66,8 +66,9 @@ enum class EN2CGeminiModel : uint8
 UENUM(BlueprintType)
 enum class EN2CDeepSeekModel : uint8
 {
-    DeepSeek_R1      UMETA(DisplayName = "DeepSeek R1", Value = "deepseek-reasoner"),
-    DeepSeek_V3      UMETA(DisplayName = "DeepSeek V3", Value = "deepseek-chat"),
+    DeepSeek_R1        UMETA(DisplayName = "DeepSeek R1", Value = "deepseek-reasoner"),
+    DeepSeek_V3        UMETA(DisplayName = "DeepSeek V3", Value = "deepseek-chat"),
+    DeepSeek_V4_Flash  UMETA(DisplayName = "DeepSeek V4 Flash", Value = "deepseek-v4-flash"),
 };
 
 

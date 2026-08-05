@@ -217,7 +217,7 @@ public:
 
     /** Selected LLM provider */
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Node to Code | LLM Provider")
-    EN2CLLMProvider Provider = EN2CLLMProvider::Anthropic;
+    EN2CLLMProvider Provider = EN2CLLMProvider::DeepSeek;
 
     /** Reference to user secrets containing API keys */
     UPROPERTY(Transient)
@@ -272,7 +272,7 @@ public:
 
     /** DeepSeek Model Selection - R1 recommended for most accurate results */
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Node to Code | LLM Services | DeepSeek")
-    EN2CDeepSeekModel DeepSeekModel = EN2CDeepSeekModel::DeepSeek_R1;
+    EN2CDeepSeekModel DeepSeekModel = EN2CDeepSeekModel::DeepSeek_V4_Flash;
     
     /** DeepSeek API Key - Stored separately in user secrets */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Node to Code | LLM Services | DeepSeek",
