@@ -101,28 +101,35 @@ void FNodeToCodeModule::StartupModule()
         FN2CLogger::Get().Log(TEXT("Syntax definitions initialized successfully"), EN2CLogSeverity::Debug);
     }
 
-    // Start MCP HTTP server
-    const UN2CSettings* McpSettings = GetDefault<UN2CSettings>();
-    int32 McpPort = McpSettings ? McpSettings->McpServerPort : 27000;
-    
-    if (FN2CMcpHttpServerManager::Get().StartServer(McpPort))
+    if (IsRunningCommandlet())
     {
-        FN2CLogger::Get().Log(TEXT("MCP HTTP server initialized successfully"), EN2CLogSeverity::Info);
+        FN2CLogger::Get().Log(TEXT("Skipping MCP/SSE server startup while running as a commandlet"), EN2CLogSeverity::Info);
     }
     else
     {
-        FN2CLogger::Get().LogError(TEXT("Failed to start MCP HTTP server"), TEXT("NodeToCode"));
-    }
-    
-    // Start SSE server for long-running operations
-    int32 SsePort = McpPort + 1;
-    if (NodeToCodeSseServer::StartSseServer(SsePort))
-    {
-        FN2CLogger::Get().Log(FString::Printf(TEXT("SSE server started on port %d"), SsePort), EN2CLogSeverity::Info);
-    }
-    else
-    {
-        FN2CLogger::Get().LogError(FString::Printf(TEXT("Failed to start SSE server on port %d"), SsePort));
+        // Start MCP HTTP server
+        const UN2CSettings* McpSettings = GetDefault<UN2CSettings>();
+        int32 McpPort = McpSettings ? McpSettings->McpServerPort : 27000;
+
+        if (FN2CMcpHttpServerManager::Get().StartServer(McpPort))
+        {
+            FN2CLogger::Get().Log(TEXT("MCP HTTP server initialized successfully"), EN2CLogSeverity::Info);
+        }
+        else
+        {
+            FN2CLogger::Get().LogError(TEXT("Failed to start MCP HTTP server"), TEXT("NodeToCode"));
+        }
+
+        // Start SSE server for long-running operations
+        int32 SsePort = McpPort + 1;
+        if (NodeToCodeSseServer::StartSseServer(SsePort))
+        {
+            FN2CLogger::Get().Log(FString::Printf(TEXT("SSE server started on port %d"), SsePort), EN2CLogSeverity::Info);
+        }
+        else
+        {
+            FN2CLogger::Get().LogError(FString::Printf(TEXT("Failed to start SSE server on port %d"), SsePort));
+        }
     }
 
     // Register OAuth settings customization
