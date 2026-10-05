@@ -239,6 +239,18 @@ public:
               ToolTip = "Optional. When set, overrides the active provider's default API endpoint. Must be the full URL to the request endpoint, e.g. https://my-provider.com/v1/chat/completions. Leave empty to use the provider default."))
     FString CustomEndpoint;
 
+    /**
+     * Maximum number of tokens the model may generate in a single response.
+     * Large Blueprints (many nodes / graphs) need a large value. Note that
+     * reasoning/thinking models consume part of this budget for their internal
+     * reasoning before emitting the actual JSON.
+     */
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Node to Code | LLM Provider",
+        meta = (DisplayName = "Max Output Tokens",
+              ClampMin = "1024", ClampMax = "1048576", UIMin = "1024", UIMax = "393216",
+              ToolTip = "Maximum tokens the model may generate per response. Increase for large Blueprints. Reasoning models spend part of this budget on internal reasoning, so keep it generous (e.g. 65536+)."))
+    int32 MaxOutputTokens = 65536;
+
     /** Reference to user secrets containing API keys */
     UPROPERTY(Transient)
     mutable UN2CUserSecrets* UserSecrets;

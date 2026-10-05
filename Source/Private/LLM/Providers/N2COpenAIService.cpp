@@ -2,6 +2,7 @@
 
 #include "LLM/Providers/N2COpenAIService.h"
 
+#include "Core/N2CSettings.h"
 #include "LLM/N2CLLMModels.h"
 #include "LLM/N2CLLMModelRegistry.h"
 #include "LLM/N2CSystemPromptManager.h"
@@ -93,7 +94,10 @@ FString UN2COpenAIService::FormatChatCompletionsPayload(const FString& UserMessa
     // Set common parameters
     // Note: Temperature is not supported for o1/o3 models, but the payload builder will handle this
     PayloadBuilder->SetTemperature(0.0f);
-    PayloadBuilder->SetMaxTokens(16000);
+
+    // Max output tokens - configurable (reasoning models consume part of this budget)
+    const UN2CSettings* Settings = GetDefault<UN2CSettings>();
+    PayloadBuilder->SetMaxTokens(Settings ? FMath::Max(Settings->MaxOutputTokens, 1024) : 65536);
 
     // Add JSON response format for models that support it
     // The payload builder will handle the differences between model types
@@ -183,8 +187,12 @@ FString UN2COpenAIService::FormatResponsesAPIPayload(const FString& UserMessage,
     TextConfig->SetObjectField(TEXT("format"), FormatConfig);
     RootObject->SetObjectField(TEXT("text"), TextConfig);
 
-    // Set max output tokens (Responses API uses max_output_tokens)
-    RootObject->SetNumberField(TEXT("max_output_tokens"), 16000);
+    // Set max output tokens (Responses API uses max_output_tokens) - configurable
+    {
+        const UN2CSettings* Settings = GetDefault<UN2CSettings>();
+        const int32 MaxOutputTokens = Settings ? FMath::Max(Settings->MaxOutputTokens, 1024) : 65536;
+        RootObject->SetNumberField(TEXT("max_output_tokens"), MaxOutputTokens);
+    }
 
     // Serialize to JSON string
     FString OutputString;

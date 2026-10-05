@@ -63,7 +63,10 @@ FString UN2CAnthropicService::FormatRequestPayload(const FString& UserMessage, c
 
     // Set common parameters
     PayloadBuilder->SetTemperature(0.0f);
-    PayloadBuilder->SetMaxTokens(16000);
+
+    // Max output tokens - configurable (reasoning models consume part of this budget)
+    const UN2CSettings* Settings = GetDefault<UN2CSettings>();
+    PayloadBuilder->SetMaxTokens(Settings ? FMath::Max(Settings->MaxOutputTokens, 1024) : 65536);
 
     // Try prepending source files to the user message
     FString FinalUserMessage = UserMessage;
