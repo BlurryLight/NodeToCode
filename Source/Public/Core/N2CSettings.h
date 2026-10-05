@@ -219,6 +219,26 @@ public:
     UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Node to Code | LLM Provider")
     EN2CLLMProvider Provider = EN2CLLMProvider::DeepSeek;
 
+    /**
+     * Optional free-text model ID. When set, this overrides the model selected for the
+     * active provider, so newly released or third-party model IDs can be used without a
+     * code change. Leave empty to use the provider's model selection below.
+     */
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Node to Code | LLM Provider",
+        meta = (DisplayName = "Custom Model ID",
+              ToolTip = "Optional. When set, overrides the model selected for the active provider below. Use this to target a model ID that is not in the list (e.g. a newly released or third-party model). Leave empty to use the selected model."))
+    FString CustomModelId;
+
+    /**
+     * Optional custom API endpoint. When set, this overrides the default endpoint of the
+     * active provider. Must be the full URL to the request endpoint (e.g.
+     * https://my-provider.com/v1/chat/completions). Leave empty to use the provider default.
+     */
+    UPROPERTY(Config, EditAnywhere, BlueprintReadOnly, Category = "Node to Code | LLM Provider",
+        meta = (DisplayName = "Custom Endpoint",
+              ToolTip = "Optional. When set, overrides the active provider's default API endpoint. Must be the full URL to the request endpoint, e.g. https://my-provider.com/v1/chat/completions. Leave empty to use the provider default."))
+    FString CustomEndpoint;
+
     /** Reference to user secrets containing API keys */
     UPROPERTY(Transient)
     mutable UN2CUserSecrets* UserSecrets;

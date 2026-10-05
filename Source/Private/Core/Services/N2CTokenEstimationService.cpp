@@ -385,7 +385,15 @@ void FN2CTokenEstimationService::RefreshModelInfo()
 	FN2CLLMModelRegistry& Registry = FN2CLLMModelRegistry::Get();
 	const FN2CModelMetadata* Metadata = nullptr;
 
-	switch (Settings->Provider)
+	// Optional free-text model ID override (ignored for local providers, which use their own model fields)
+	const FString CustomModel = Settings->CustomModelId.TrimStartAndEnd();
+	if (!CustomModel.IsEmpty() &&
+		Settings->Provider != EN2CLLMProvider::Ollama &&
+		Settings->Provider != EN2CLLMProvider::LMStudio)
+	{
+		Metadata = Registry.GetModelMetadataById(CustomModel);
+	}
+	else switch (Settings->Provider)
 	{
 	case EN2CLLMProvider::OpenAI:
 		Metadata = Registry.GetModelMetadata(Settings->OpenAI_Model);
@@ -446,6 +454,7 @@ void FN2CTokenEstimationService::OnSettingsPropertyChanged(UObject* Object, FPro
 	// Check if relevant property changed
 	FName PropertyName = PropertyChangedEvent.GetPropertyName();
 	if (PropertyName == GET_MEMBER_NAME_CHECKED(UN2CSettings, Provider) ||
+		PropertyName == GET_MEMBER_NAME_CHECKED(UN2CSettings, CustomModelId) ||
 		PropertyName == GET_MEMBER_NAME_CHECKED(UN2CSettings, OpenAI_Model) ||
 		PropertyName == GET_MEMBER_NAME_CHECKED(UN2CSettings, AnthropicModel) ||
 		PropertyName == GET_MEMBER_NAME_CHECKED(UN2CSettings, Gemini_Model) ||

@@ -31,13 +31,6 @@ void UN2CDeepSeekService::GetProviderHeaders(TMap<FString, FString>& OutHeaders)
 
 FString UN2CDeepSeekService::FormatRequestPayload(const FString& UserMessage, const FString& SystemMessage) const
 {
-    // Load settings
-    const UN2CSettings* Settings = GetDefault<UN2CSettings>();
-    if (!Settings)
-    {
-        FN2CLogger::Get().LogError(TEXT("Failed to load plugin settings"), TEXT("LLMModule"));
-    }
-
     // Create and configure payload builder
     UN2CLLMPayloadBuilder* PayloadBuilder = NewObject<UN2CLLMPayloadBuilder>();
     PayloadBuilder->Initialize(Config.Model);
@@ -55,8 +48,9 @@ FString UN2CDeepSeekService::FormatRequestPayload(const FString& UserMessage, co
     PayloadBuilder->AddSystemMessage(SystemMessage);
     PayloadBuilder->AddUserMessage(FinalUserMessage);
     
-    // Add JSON schema for response format if model supports it
-    const FString ModelValue = Settings ? FN2CLLMModelUtils::GetDeepSeekModelValue(Settings->DeepSeekModel) : TEXT("");
+    // Use the model ID actually in use (honors the "Custom Model ID" override).
+    // The reasoner model does not support json_object response format.
+    const FString ModelValue = Config.Model;
     if (ModelValue != TEXT("deepseek-reasoner"))
     {
         PayloadBuilder->SetJsonResponseFormat(UN2CLLMPayloadBuilder::GetN2CResponseSchema());

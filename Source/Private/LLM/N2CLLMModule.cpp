@@ -47,6 +47,17 @@ bool UN2CLLMModule::Initialize()
     Config.ApiKey = Settings->GetActiveApiKey();
     Config.Model = Settings->GetActiveModel();
 
+    // Optional custom endpoint override (e.g. a third-party OpenAI v1-compatible service).
+    // When empty, each service falls back to its provider default endpoint.
+    const FString CustomEndpoint = Settings->CustomEndpoint.TrimStartAndEnd();
+    if (!CustomEndpoint.IsEmpty())
+    {
+        Config.ApiEndpoint = CustomEndpoint;
+        FN2CLogger::Get().Log(
+            FString::Printf(TEXT("Using custom LLM endpoint: %s"), *CustomEndpoint),
+            EN2CLogSeverity::Info, TEXT("LLMModule"));
+    }
+
     // Initialize provider registry
     InitializeProviderRegistry();
 

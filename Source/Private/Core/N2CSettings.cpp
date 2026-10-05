@@ -104,6 +104,13 @@ FString UN2CSettings::GetActiveApiKey() const
 
 FString UN2CSettings::GetActiveModel() const
 {
+    // Optional free-text override for the active provider's model ID
+    const FString CustomModel = CustomModelId.TrimStartAndEnd();
+    if (!CustomModel.IsEmpty())
+    {
+        return CustomModel;
+    }
+
     switch (Provider)
     {
         case EN2CLLMProvider::OpenAI:
@@ -268,6 +275,7 @@ void UN2CSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChanged
 
         // Notify token estimation service when provider or model changes
         if (PropertyName == GET_MEMBER_NAME_CHECKED(UN2CSettings, Provider) ||
+            PropertyName == GET_MEMBER_NAME_CHECKED(UN2CSettings, CustomModelId) ||
             PropertyName == GET_MEMBER_NAME_CHECKED(UN2CSettings, OpenAI_Model) ||
             PropertyName == GET_MEMBER_NAME_CHECKED(UN2CSettings, AnthropicModel) ||
             PropertyName == GET_MEMBER_NAME_CHECKED(UN2CSettings, Gemini_Model) ||
@@ -364,6 +372,16 @@ FString UN2CSettings::GetActiveApiKeyForProvider(EN2CLLMProvider InProvider) con
 
 FString UN2CSettings::GetActiveModelForProvider(EN2CLLMProvider InProvider) const
 {
+    // Optional free-text override, only applies to the currently active provider
+    if (InProvider == Provider)
+    {
+        const FString CustomModel = CustomModelId.TrimStartAndEnd();
+        if (!CustomModel.IsEmpty())
+        {
+            return CustomModel;
+        }
+    }
+
     switch (InProvider)
     {
         case EN2CLLMProvider::OpenAI:

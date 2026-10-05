@@ -15,8 +15,19 @@ bool UN2CLMStudioService::Initialize(const FN2CLLMConfig& InConfig)
     const UN2CSettings* Settings = GetDefault<UN2CSettings>();
     if (Settings)
     {
+        // A custom endpoint supplied via the global settings takes precedence
+        if (!UpdatedConfig.ApiEndpoint.IsEmpty())
+        {
+            LMStudioEndpoint = UpdatedConfig.ApiEndpoint;
+
+            FN2CLogger::Get().Log(
+                FString::Printf(TEXT("Using custom endpoint: %s"), *LMStudioEndpoint),
+                EN2CLogSeverity::Info,
+                TEXT("LMStudioService")
+            );
+        }
         // Use custom endpoint if provided, otherwise use default
-        if (!Settings->LMStudioEndpoint.IsEmpty())
+        else if (!Settings->LMStudioEndpoint.IsEmpty())
         {
             // Normalize the base URL (remove trailing slash if present)
             FString BaseUrl = Settings->LMStudioEndpoint;

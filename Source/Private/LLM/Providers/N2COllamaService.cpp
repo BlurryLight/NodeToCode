@@ -17,9 +17,18 @@ bool UN2COllamaService::Initialize(const FN2CLLMConfig& InConfig)
     if (Settings)
     {
         OllamaConfig = Settings->OllamaConfig;
-        
+
+        // A custom endpoint supplied via the global settings takes precedence
+        if (!UpdatedConfig.ApiEndpoint.IsEmpty())
+        {
+            FN2CLogger::Get().Log(
+                FString::Printf(TEXT("Using custom endpoint: %s"), *UpdatedConfig.ApiEndpoint),
+                EN2CLogSeverity::Info,
+                TEXT("OllamaService")
+            );
+        }
         // Transfer the custom Ollama endpoint to the config
-        if (!OllamaConfig.OllamaEndpoint.IsEmpty())
+        else if (!OllamaConfig.OllamaEndpoint.IsEmpty())
         {
             // Normalize the base URL (remove trailing slash if present)
             FString BaseUrl = OllamaConfig.OllamaEndpoint;
