@@ -181,7 +181,7 @@
         - The header (.h) must contain method declarations per-event. The source (.cpp) must contain separate implementations per-event. Do NOT inline all logic into a single large function.
         - If multiple events exist in the provided graphs, output multiple, separate functions and their bodies, preserving names and roles.
         - Graphs of type "EventGraph" should orchestrate calls to the correct per-event functions instead of absorbing them into a monolithic function.
-        - **Do NOT** redefine the class skeleton (UCLASS / class declaration / ctor / dtor) inside EventGraph graphs. That belongs exclusively to the ClassItSelf graph.
+        - **Do NOT** redefine the class skeleton (UCLASS / class declaration / ctor / dtor) in ANY graph other than the ClassItSelf graph. This applies to every other graph type, including EventGraph, Function, Macro, Construction and Composite graphs. The class skeleton belongs exclusively to the ClassItSelf graph.
 
         ### Class Skeleton, Components, Constructor, and Destructor - STRICT ###
         - For each distinct Blueprint class identified by `metadata.BlueprintClass` (e.g. `AMCMyObjectBase`), ensure that the generated code assumes a concrete Unreal C++ class exists or will be created with:
@@ -221,7 +221,12 @@
           - Add missing constructor/declaration if it does not already exist.
           - Add missing destructor declaration/implementation if appropriate.
           - Add new method declarations into the existing class body.
-        - When the user does *not* provide source files, generate a plausible full class skeleton in `graphDeclaration` for the primary Blueprint class, including:
+        - Class skeleton emission decision (apply this BEFORE writing any `graphDeclaration`):
+          - Emit the full class skeleton (UCLASS + class declaration + ctor/dtor + UPROPERTY members + component members) **only if** either:
+            - the input `graphs[]` array contains a graph with `"graph_type": "ClassItSelf"` (i.e. this request is the class-skeleton request), OR
+            - this is a standalone single-graph translation: there is NO `ClassItSelf` graph in `graphs[]` AND both top-level arrays `variables[]` and `components[]` are empty.
+          - **If there is NO `ClassItSelf` graph in `graphs[]` but `variables[]` or `components[]` is non-empty, this request is one slice of a multi-graph "Translate Entire Blueprint" batch.** In that case you MUST NOT emit a class skeleton: do NOT output a `UCLASS()` macro, a `class ... : public ...` declaration, a constructor/destructor, `UPROPERTY` members, or component members. Output ONLY the per-function / per-event declarations in `graphDeclaration` and their implementations in `graphImplementation` for the graph contained in this request. The class skeleton — including all member variables and components — is produced by the separate `ClassItSelf` request; assume those members already exist on the class.
+        - When emitting the class skeleton (per the decision rule above) and the user does *not* provide source files, generate a plausible full class skeleton in `graphDeclaration` for the primary Blueprint class, including:
           - `UCLASS()` macro.
           - Class declaration inheriting from the implied base (e.g. `AActor`).
           - Constructor and destructor declarations.
@@ -356,7 +361,7 @@
            1a. **Handling Multiple Graphs**
            - If only one graph is present, assume that graph is the one you need to convert and add it to the graphs object.
            - If multiple graphs are present, then each one must be converted and added to the graphs property.
-             - **Function Graph**: Convert each “Function” type graph into a standalone C++ function.
+             - **Function Graph**: Convert each “Function” type graph into a standalone C++ function. Do NOT emit a class skeleton for it unless the input `graphs[]` contains a `ClassItSelf` graph (see the "Class skeleton emission decision" rule above).
              - **Event Graph**: Treat it like an ExecuteUbergraph or “entry point” function. If it calls other graphs, incorporate them by calling those functions in code.
              - **Macro** (GraphType = "Macro"): Typically implemented as a helper function in C++. Include any parameters/outputs as function parameters/returns.
              - **Composite** (GraphType = "Composite") or collapsed graph: Usually inlined inside the parent function. You can generate an internal helper function or embed its logic inline, depending on the user context.
